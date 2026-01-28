@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فريش ماركت - إدارة العملات</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Tajawal', sans-serif; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out; }
+        .content-padding { padding-top: 72px; padding-bottom: 90px; }
+        .product-image { transition: transform 0.5s ease; width: 100%; height: 100%; object-fit: cover; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex justify-center text-gray-900">
+
+    <div class="w-full max-w-md bg-white min-h-screen shadow-2xl relative flex flex-col">
+        
+        <!-- Header -->
+        <header class="fixed top-0 w-full max-w-md bg-white/90 backdrop-blur-md z-50 border-b border-gray-100 px-4 py-3 flex justify-between items-center h-[64px]">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center text-white font-bold shadow-sm">ف</div>
+                <h1 class="font-black text-lg text-green-800 tracking-tight whitespace-nowrap">فريش ماركت</h1>
+            </div>
+            
+            <div class="flex items-center gap-1">
+                <!-- زر تعديل العملات -->
+                <button onclick="toggleExchangeModal()" class="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors" title="تعديل أسعار الصرف">
+                    <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                </button>
+                <button class="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors relative" onclick="switchTab('cart')">
+                    <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                    <span id="header-cart-count" class="absolute top-1 right-1 bg-red-500 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold hidden border-2 border-white">0</span>
+                </button>
+            </div>
+        </header>
+
+        <main id="main-content" class="flex-1 overflow-y-auto scrollbar-hide content-padding">
+            <!-- Content Injected Here -->
+        </main>
+
+        <!-- Navigation -->
+        <nav class="fixed bottom-0 w-full max-w-md bg-white border-t border-gray-100 px-2 py-2 flex justify-around items-center z-40">
+            <button onclick="switchTab('home')" class="nav-btn flex flex-col items-center justify-center w-14 py-1 text-green-600" id="nav-home">
+                <i data-lucide="home" class="w-5 h-5 mb-0.5"></i>
+                <span class="text-[10px] font-medium">الرئيسية</span>
+            </button>
+            <button onclick="switchTab('cart')" class="nav-btn flex flex-col items-center justify-center w-14 py-1 text-gray-400" id="nav-cart">
+                <i data-lucide="shopping-bag" class="w-5 h-5 mb-0.5"></i>
+                <span class="text-[10px] font-medium">السلة</span>
+            </button>
+            <button onclick="toggleExchangeModal()" class="nav-btn flex flex-col items-center justify-center w-14 py-1 text-gray-400" id="nav-rates">
+                <i data-lucide="coins" class="w-5 h-5 mb-0.5"></i>
+                <span class="text-[10px] font-medium">العملات</span>
+            </button>
+        </nav>
+
+        <!-- Modal: تعديل أسعار الصرف -->
+        <div id="exchange-modal" class="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-6 hidden">
+            <div class="bg-white w-full max-w-xs rounded-3xl p-6 shadow-2xl animate-fade-in">
+                <h3 class="font-black text-gray-800 text-lg mb-4 text-center">تعديل أسعار الصرف</h3>
+                <p class="text-[10px] text-gray-500 mb-4 text-center">(السعر مقابل 1 دولار أمريكي)</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-xs font-bold text-gray-600 block mb-1">الليرة التركية (TRY)</label>
+                        <input type="number" id="input-try" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-mono focus:ring-2 ring-green-500 outline-none" step="0.01">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-600 block mb-1">الليرة السورية (SYP)</label>
+                        <input type="number" id="input-syp" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-mono focus:ring-2 ring-green-500 outline-none">
+                    </div>
+                </div>
+
+                <div class="flex gap-2 mt-6">
+                    <button onclick="saveExchangeRates()" class="flex-1 bg-green-600 text-white py-2 rounded-xl font-bold text-sm">حفظ</button>
+                    <button onclick="toggleExchangeModal()" class="flex-1 bg-gray-100 text-gray-600 py-2 rounded-xl font-bold text-sm">إلغاء</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="toast" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-gray-900/90 text-white px-5 py-2.5 rounded-full shadow-2xl text-sm z-[60] hidden">
+            <span id="toast-message"></span>
+        </div>
+    </div>
+
+    <script>
+        // السعر الأساسي للمنتجات هنا بالدولار لسهولة التحويل العالمي
+        const products = [
+            { id: 1, name: 'تفاح أحمر طازج', price: 4.00, image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?q=80&w=400&auto=format&fit=crop' },
+            { id: 2, name: 'حليب كامل الدسم', price: 2.50, image: 'https://images.unsplash.com/photo-1563636619-e910009355bb?q=80&w=400&auto=format&fit=crop' },
+            { id: 3, name: 'خبز توست طازج', price: 1.20, image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?q=80&w=400&auto=format&fit=crop' },
+            { id: 4, name: 'دجاج مبرد كامل', price: 8.00, image: 'https://images.unsplash.com/photo-1587593810167-a84920ea0781?q=80&w=400&auto=format&fit=crop' },
+            { id: 5, name: 'طماطم كرزية بلدي', price: 1.80, image: 'https://images.unsplash.com/photo-1592841200221-a6898f307baa?q=80&w=400&auto=format&fit=crop' },
+            { id: 6, name: 'جبنة شيدر فاخرة', price: 5.50, image: 'https://images.unsplash.com/photo-1618164435735-413d3b066c9a?q=80&w=400&auto=format&fit=crop' },
+        ];
+
+        // أسعار الصرف الافتراضية (مقابل 1 دولار)
+        let exchangeRates = {
+            TRY: 30.25, // ليرة تركية تقريبياً
+            SYP: 14500  // ليرة سورية تقريبياً
+        };
+
+        let activeTab = 'home';
+        let cart = [];
+
+        function init() {
+            renderContent();
+            lucide.createIcons();
+            // تعبئة قيم الإدخال في المودال
+            document.getElementById('input-try').value = exchangeRates.TRY;
+            document.getElementById('input-syp').value = exchangeRates.SYP;
+        }
+
+        function toggleExchangeModal() {
+            const modal = document.getElementById('exchange-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        function saveExchangeRates() {
+            const newTry = parseFloat(document.getElementById('input-try').value);
+            const newSyp = parseFloat(document.getElementById('input-syp').value);
+            
+            if (newTry > 0 && newSyp > 0) {
+                exchangeRates.TRY = newTry;
+                exchangeRates.SYP = newSyp;
+                showToast("تم تحديث أسعار الصرف بنجاح");
+                toggleExchangeModal();
+                renderContent(); // إعادة رسم المحتوى بالأسعار الجديدة
+            }
+        }
+
+        function switchTab(tabName) {
+            activeTab = tabName;
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.replace('text-green-600', 'text-gray-400'));
+            const activeBtn = document.getElementById(`nav-${tabName}`);
+            if (activeBtn) activeBtn.classList.replace('text-gray-400', 'text-green-600');
+            renderContent();
+        }
+
+        function renderContent() {
+            const container = document.getElementById('main-content');
+            container.innerHTML = (activeTab === 'home') ? getHomeHTML() : getCartHTML();
+            lucide.createIcons();
+        }
+
+        function getHomeHTML() {
+            return `
+            <div class="p-4 space-y-6 animate-fade-in">
+                <div class="bg-gray-900 rounded-3xl p-5 text-white shadow-xl flex justify-between items-center">
+                    <div>
+                        <p class="text-[10px] opacity-60 mb-1">أسعار الصرف الحالية ($1)</p>
+                        <div class="flex gap-3 text-xs font-bold">
+                            <span class="text-red-400">₺${exchangeRates.TRY}</span>
+                            <span class="text-blue-400">£${exchangeRates.SYP}</span>
+                        </div>
+                    </div>
+                    <i data-lucide="trending-up" class="w-8 h-8 text-green-500 opacity-50"></i>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    ${products.map(p => `
+                        <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+                            <img src="${p.image}" class="h-28 w-full object-cover" />
+                            <div class="p-3">
+                                <h3 class="font-bold text-xs mb-1 truncate">${p.name}</h3>
+                                <div class="space-y-0.5 mb-3">
+                                    <div class="text-green-700 font-black text-sm">$${p.price.toFixed(2)}</div>
+                                    <div class="text-[9px] text-gray-400">≈ ${(p.price * exchangeRates.TRY).toFixed(2)} ل.ت</div>
+                                </div>
+                                <button onclick="addToCart(${p.id})" class="w-full bg-gray-100 hover:bg-green-600 hover:text-white py-2 rounded-xl text-[10px] font-bold transition-all flex items-center justify-center gap-1">
+                                    <i data-lucide="plus" class="w-3 h-3"></i> إضافة للسلة
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>`;
+        }
+
+        function getCartHTML() {
+            const totalUSD = cart.reduce((t, i) => t + (i.price * i.quantity), 0);
+            if (cart.length === 0) return `<div class="p-20 text-center text-gray-300"><i data-lucide="shopping-basket" class="w-12 h-12 mx-auto mb-2 opacity-20"></i>السلة فارغة</div>`;
+
+            return `
+            <div class="p-4 space-y-4 animate-fade-in">
+                <h2 class="text-xl font-black mb-4">سلة المشتريات</h2>
+                ${cart.map(item => `
+                    <div class="flex items-center gap-3 bg-white p-3 rounded-2xl border border-gray-100">
+                        <img src="${item.image}" class="w-12 h-12 rounded-xl object-cover" />
+                        <div class="flex-1">
+                            <h3 class="font-bold text-xs">${item.name}</h3>
+                            <p class="text-green-600 text-[10px] font-bold">$${(item.price * item.quantity).toFixed(2)}</p>
+                        </div>
+                        <div class="flex items-center gap-2 bg-gray-50 rounded-lg p-1">
+                            <button onclick="updateQuantity(${item.id}, -1)" class="p-1"><i data-lucide="minus" class="w-3 h-3"></i></button>
+                            <span class="text-xs font-bold w-4 text-center">${item.quantity}</span>
+                            <button onclick="updateQuantity(${item.id}, 1)" class="p-1 text-green-600"><i data-lucide="plus" class="w-3 h-3"></i></button>
+                        </div>
+                    </div>
+                `).join('')}
+                
+                <div class="mt-6 bg-green-700 text-white p-6 rounded-[2rem] shadow-xl">
+                    <div class="flex justify-between items-end mb-6">
+                        <span class="text-xs opacity-80 font-medium">الإجمالي النهائي</span>
+                        <span class="text-3xl font-black">$${totalUSD.toFixed(2)}</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div class="bg-white/10 p-3 rounded-2xl border border-white/10">
+                            <div class="text-[9px] opacity-60 mb-1 tracking-widest">بالليرة التركية</div>
+                            <div class="text-sm font-black">₺${(totalUSD * exchangeRates.TRY).toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+                        </div>
+                        <div class="bg-white/10 p-3 rounded-2xl border border-white/10">
+                            <div class="text-[9px] opacity-60 mb-1 tracking-widest">بالليرة السورية</div>
+                            <div class="text-sm font-black">£${Math.round(totalUSD * exchangeRates.SYP).toLocaleString()}</div>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full bg-white text-green-800 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg active:scale-95 transition-transform">
+                        تأكيد الطلب
+                    </button>
+                </div>
+            </div>`;
+        }
+
+        function addToCart(id) {
+            const p = products.find(x => x.id === id);
+            const item = cart.find(x => x.id === id);
+            if (item) item.quantity++; else cart.push({...p, quantity: 1});
+            updateCartCount();
+            showToast("تمت الإضافة للسلة");
+        }
+
+        function updateQuantity(id, delta) {
+            const idx = cart.findIndex(x => x.id === id);
+            cart[idx].quantity += delta;
+            if (cart[idx].quantity <= 0) cart.splice(idx, 1);
+            updateCartCount();
+            renderContent();
+        }
+
+        function updateCartCount() {
+            const count = cart.reduce((a, b) => a + b.quantity, 0);
+            const b = document.getElementById('header-cart-count');
+            b.innerText = count;
+            count > 0 ? b.classList.remove('hidden') : b.classList.add('hidden');
+        }
+
+        function showToast(m) {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = m;
+            t.classList.remove('hidden');
+            setTimeout(() => t.classList.add('hidden'), 2000);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
